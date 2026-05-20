@@ -3,530 +3,437 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>SIGNAL — Tech & Gaming Feed</title>
+  <title>SIGNAL — News Reader</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Merriweather:wght@400;700&display=swap" rel="stylesheet" />
   <style>
-    :root {
-      --bg: #0a0a0b;
-      --surface: #111113;
-      --surface2: #18181c;
-      --border: #222228;
-      --border2: #2e2e38;
-      --text: #e8e8f0;
-      --text-muted: #7a7a90;
-      --text-dim: #4a4a60;
-      --accent: #ff3c3c;
-      --accent2: #ff7a00;
-      --accent3: #00d4ff;
-      --accent4: #a855f7;
-      --green: #00ff88;
-      --font-display: 'Bebas Neue', sans-serif;
-      --font-body: 'DM Sans', sans-serif;
-      --font-mono: 'DM Mono', monospace;
-    }
-
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-    html { scroll-behavior: smooth; }
+    :root {
+      --sidebar-w: 240px;
+      --bg: #f4f4f0;
+      --white: #ffffff;
+      --border: #e2e2dc;
+      --border-dark: #d0d0c8;
+      --text: #1a1a1a;
+      --text-muted: #6b6b6b;
+      --text-light: #999;
+      --accent: #2d6a4f;
+      --accent-light: #e8f5f0;
+      --accent-hover: #245a42;
+      --tag-bg: #f0f0eb;
+      --tag-text: #555;
+      --unread-dot: #2d6a4f;
+      --sidebar-bg: #1e1e1e;
+      --sidebar-text: #c8c8c8;
+      --sidebar-text-muted: #888;
+      --sidebar-hover: rgba(255,255,255,0.07);
+      --sidebar-active: rgba(255,255,255,0.13);
+      --sidebar-section: #555;
+      --sidebar-border: #2e2e2e;
+    }
+
+    html, body { height: 100%; }
 
     body {
+      font-family: 'Inter', sans-serif;
       background: var(--bg);
       color: var(--text);
-      font-family: var(--font-body);
-      min-height: 100vh;
-      overflow-x: hidden;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      overflow: hidden;
     }
 
-    /* Noise texture overlay */
-    body::before {
-      content: '';
-      position: fixed;
-      inset: 0;
-      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
-      pointer-events: none;
-      z-index: 1000;
-      opacity: 0.4;
-    }
-
-    /* HEADER */
-    header {
-      position: sticky;
-      top: 0;
-      z-index: 100;
-      background: rgba(10, 10, 11, 0.92);
-      backdrop-filter: blur(20px);
+    /* ── TOP BAR ── */
+    .topbar {
+      height: 52px;
+      background: var(--white);
       border-bottom: 1px solid var(--border);
-      padding: 0 2rem;
-    }
-
-    .header-inner {
-      max-width: 1600px;
-      margin: 0 auto;
       display: flex;
       align-items: center;
-      gap: 2rem;
-      height: 64px;
-    }
-
-    .logo {
-      font-family: var(--font-display);
-      font-size: 2rem;
-      letter-spacing: 0.08em;
-      color: var(--text);
-      text-decoration: none;
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
+      padding: 0 1.2rem 0 0;
+      gap: 0;
       flex-shrink: 0;
+      z-index: 50;
     }
 
-    .logo-dot {
-      width: 8px;
-      height: 8px;
+    .topbar-logo {
+      width: var(--sidebar-w);
+      flex-shrink: 0;
+      background: var(--sidebar-bg);
+      height: 100%;
+      display: flex;
+      align-items: center;
+      padding: 0 1.2rem;
+      gap: 0.5rem;
+      border-right: 1px solid var(--sidebar-border);
+    }
+
+    .logo-mark {
+      width: 26px;
+      height: 26px;
       background: var(--accent);
-      border-radius: 50%;
-      animation: pulse 2s ease-in-out infinite;
-    }
-
-    @keyframes pulse {
-      0%, 100% { opacity: 1; transform: scale(1); }
-      50% { opacity: 0.5; transform: scale(0.8); }
-    }
-
-    .header-meta {
-      margin-left: auto;
-      display: flex;
-      align-items: center;
-      gap: 1.5rem;
-    }
-
-    .live-badge {
-      display: flex;
-      align-items: center;
-      gap: 0.4rem;
-      font-family: var(--font-mono);
-      font-size: 0.7rem;
-      color: var(--green);
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-    }
-
-    .live-dot {
-      width: 6px;
-      height: 6px;
-      background: var(--green);
-      border-radius: 50%;
-      animation: pulse 1.5s ease-in-out infinite;
-    }
-
-    .refresh-btn {
-      background: none;
-      border: 1px solid var(--border2);
-      color: var(--text-muted);
-      font-family: var(--font-mono);
-      font-size: 0.7rem;
-      letter-spacing: 0.08em;
-      padding: 0.4rem 0.9rem;
-      cursor: pointer;
-      border-radius: 4px;
-      text-transform: uppercase;
-      transition: all 0.2s;
-    }
-
-    .refresh-btn:hover {
-      border-color: var(--accent);
-      color: var(--accent);
-    }
-
-    .refresh-btn.loading {
-      opacity: 0.5;
-      pointer-events: none;
-    }
-
-    /* CHANNEL NAV */
-    .channel-nav {
-      background: var(--surface);
-      border-bottom: 1px solid var(--border);
-      padding: 0 2rem;
-      overflow-x: auto;
-      scrollbar-width: none;
-    }
-
-    .channel-nav::-webkit-scrollbar { display: none; }
-
-    .channel-nav-inner {
-      max-width: 1600px;
-      margin: 0 auto;
-      display: flex;
-      gap: 0;
-    }
-
-    .channel-tab {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      padding: 0.9rem 1.4rem;
-      font-family: var(--font-mono);
-      font-size: 0.72rem;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      color: var(--text-muted);
-      cursor: pointer;
-      border: none;
-      background: none;
-      border-bottom: 2px solid transparent;
-      transition: all 0.2s;
-      white-space: nowrap;
-    }
-
-    .channel-tab:hover {
-      color: var(--text);
-    }
-
-    .channel-tab.active {
-      color: var(--text);
-      border-bottom-color: var(--accent);
-    }
-
-    .channel-tab .tab-icon {
-      font-size: 0.9rem;
-    }
-
-    /* MAIN LAYOUT */
-    .main-layout {
-      max-width: 1600px;
-      margin: 0 auto;
-      padding: 2rem;
-      display: grid;
-      grid-template-columns: 260px 1fr;
-      gap: 2rem;
-      align-items: start;
-    }
-
-    /* SIDEBAR */
-    .sidebar {
-      position: sticky;
-      top: 120px;
-      display: flex;
-      flex-direction: column;
-      gap: 1.5rem;
-    }
-
-    .sidebar-block {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      overflow: hidden;
-    }
-
-    .sidebar-title {
-      font-family: var(--font-mono);
-      font-size: 0.65rem;
-      letter-spacing: 0.15em;
-      text-transform: uppercase;
-      color: var(--text-dim);
-      padding: 0.8rem 1rem;
-      border-bottom: 1px solid var(--border);
-    }
-
-    .source-list {
-      list-style: none;
-    }
-
-    .source-item {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 0.6rem 1rem;
-      font-size: 0.8rem;
-      color: var(--text-muted);
-      border-bottom: 1px solid var(--border);
-      cursor: pointer;
-      transition: all 0.15s;
-    }
-
-    .source-item:last-child { border-bottom: none; }
-
-    .source-item:hover { 
-      background: var(--surface2);
-      color: var(--text);
-    }
-
-    .source-item.active {
-      color: var(--accent);
-      background: rgba(255, 60, 60, 0.05);
-    }
-
-    .source-dot {
-      width: 5px;
-      height: 5px;
-      border-radius: 50%;
-      background: var(--border2);
-      flex-shrink: 0;
-    }
-
-    .source-item.active .source-dot { background: var(--accent); }
-    .source-item.loaded .source-dot { background: var(--green); }
-    .source-item.error .source-dot { background: var(--accent2); }
-
-    .stats-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 0;
-    }
-
-    .stat-item {
-      padding: 1rem;
-      border-right: 1px solid var(--border);
-      border-bottom: 1px solid var(--border);
-    }
-
-    .stat-item:nth-child(2), .stat-item:nth-child(4) { border-right: none; }
-    .stat-item:nth-child(3), .stat-item:nth-child(4) { border-bottom: none; }
-
-    .stat-value {
-      font-family: var(--font-display);
-      font-size: 1.8rem;
-      letter-spacing: 0.05em;
-      color: var(--text);
-      line-height: 1;
-    }
-
-    .stat-label {
-      font-family: var(--font-mono);
-      font-size: 0.6rem;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      color: var(--text-dim);
-      margin-top: 0.3rem;
-    }
-
-    /* FEED AREA */
-    .feed-area {
-      display: flex;
-      flex-direction: column;
-      gap: 2.5rem;
-    }
-
-    /* CHANNEL SECTION */
-    .channel-section {
-      animation: slideUp 0.4s ease both;
-    }
-
-    @keyframes slideUp {
-      from { opacity: 0; transform: translateY(16px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-
-    .section-header {
-      display: flex;
-      align-items: baseline;
-      gap: 1rem;
-      margin-bottom: 1.2rem;
-      padding-bottom: 0.8rem;
-      border-bottom: 1px solid var(--border);
-    }
-
-    .section-name {
-      font-family: var(--font-display);
-      font-size: 1.5rem;
-      letter-spacing: 0.08em;
-      color: var(--text);
-    }
-
-    .section-count {
-      font-family: var(--font-mono);
-      font-size: 0.65rem;
-      color: var(--text-dim);
-      letter-spacing: 0.1em;
-    }
-
-    .section-badge {
-      margin-left: auto;
-      font-family: var(--font-mono);
-      font-size: 0.6rem;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      padding: 0.2rem 0.6rem;
-      border-radius: 3px;
-    }
-
-    .badge-tech { background: rgba(0, 212, 255, 0.1); color: var(--accent3); border: 1px solid rgba(0, 212, 255, 0.2); }
-    .badge-gaming { background: rgba(168, 85, 247, 0.1); color: var(--accent4); border: 1px solid rgba(168, 85, 247, 0.2); }
-    .badge-studio { background: rgba(255, 60, 60, 0.1); color: var(--accent); border: 1px solid rgba(255, 60, 60, 0.2); }
-    .badge-ai { background: rgba(0, 255, 136, 0.1); color: var(--green); border: 1px solid rgba(0, 255, 136, 0.2); }
-
-    /* ARTICLE GRID — featured + list */
-    .article-grid {
-      display: grid;
-      gap: 1px;
-      background: var(--border);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      overflow: hidden;
-    }
-
-    .article-grid.has-featured {
-      grid-template-columns: 1fr 1fr;
-      grid-template-rows: auto;
-    }
-
-    .article-card {
-      background: var(--surface);
-      transition: background 0.15s;
-      cursor: pointer;
-      text-decoration: none;
-      color: inherit;
-      display: block;
-      position: relative;
-      overflow: hidden;
-    }
-
-    .article-card:hover { background: var(--surface2); }
-
-    /* Featured (first) card */
-    .article-card.featured {
-      grid-row: 1 / 3;
-      display: flex;
-      flex-direction: column;
-    }
-
-    .card-image {
-      width: 100%;
-      height: 220px;
-      object-fit: cover;
-      display: block;
-      background: var(--surface2);
-    }
-
-    .featured .card-image {
-      height: 280px;
-    }
-
-    .card-image-placeholder {
-      width: 100%;
-      height: 220px;
-      background: var(--surface2);
+      border-radius: 6px;
       display: flex;
       align-items: center;
       justify-content: center;
       flex-shrink: 0;
     }
 
-    .featured .card-image-placeholder {
-      height: 280px;
+    .logo-mark svg {
+      width: 14px;
+      height: 14px;
+      fill: white;
     }
 
-    .placeholder-icon {
-      font-size: 2.5rem;
-      opacity: 0.2;
+    .logo-name {
+      font-size: 0.95rem;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      color: #fff;
     }
 
-    .card-body {
-      padding: 1rem 1.2rem;
+    .topbar-search {
       flex: 1;
       display: flex;
-      flex-direction: column;
-      gap: 0.5rem;
-    }
-
-    .card-meta {
-      display: flex;
       align-items: center;
+      padding: 0 1rem;
       gap: 0.6rem;
     }
 
-    .card-source {
-      font-family: var(--font-mono);
-      font-size: 0.6rem;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
+    .search-wrap {
+      position: relative;
+      width: 280px;
+    }
+
+    .search-icon {
+      position: absolute;
+      left: 0.7rem;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-light);
+      pointer-events: none;
+    }
+
+    .search-input {
+      width: 100%;
+      height: 34px;
+      border: 1px solid var(--border-dark);
+      border-radius: 6px;
+      background: var(--bg);
+      padding: 0 0.8rem 0 2rem;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.82rem;
+      color: var(--text);
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .search-input:focus { border-color: var(--accent); }
+    .search-input::placeholder { color: var(--text-light); }
+
+    .topbar-right {
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+      margin-left: auto;
+    }
+
+    .topbar-btn {
+      height: 32px;
+      padding: 0 0.9rem;
+      border: 1px solid var(--border-dark);
+      border-radius: 6px;
+      background: var(--white);
+      font-family: 'Inter', sans-serif;
+      font-size: 0.78rem;
+      font-weight: 500;
+      color: var(--text-muted);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      transition: all 0.15s;
+      white-space: nowrap;
+    }
+
+    .topbar-btn:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+      background: var(--accent-light);
+    }
+
+    .topbar-btn.loading { opacity: 0.5; pointer-events: none; }
+
+    .live-pill {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      font-size: 0.72rem;
+      font-weight: 500;
       color: var(--accent);
     }
 
-    .card-time {
-      font-family: var(--font-mono);
-      font-size: 0.6rem;
-      color: var(--text-dim);
-      letter-spacing: 0.05em;
-    }
-
-    .card-dot {
-      width: 2px;
-      height: 2px;
-      background: var(--text-dim);
+    .live-dot {
+      width: 7px;
+      height: 7px;
+      background: var(--accent);
       border-radius: 50%;
+      animation: blink 2s ease-in-out infinite;
     }
 
-    .card-title {
-      font-size: 0.92rem;
-      font-weight: 500;
-      line-height: 1.4;
-      color: var(--text);
-    }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
 
-    .featured .card-title {
-      font-size: 1.1rem;
-    }
-
-    .card-summary {
-      font-size: 0.78rem;
-      color: var(--text-muted);
-      line-height: 1.6;
-      display: -webkit-box;
-      -webkit-line-clamp: 2;
-      -webkit-box-orient: vertical;
+    /* ── BODY LAYOUT ── */
+    .body-wrap {
+      display: flex;
+      flex: 1;
       overflow: hidden;
     }
 
-    /* List-style cards (3+ in column) */
-    .article-list {
+    /* ── SIDEBAR ── */
+    .sidebar {
+      width: var(--sidebar-w);
+      flex-shrink: 0;
+      background: var(--sidebar-bg);
+      border-right: 1px solid var(--sidebar-border);
+      overflow-y: auto;
+      scrollbar-width: thin;
+      scrollbar-color: #333 transparent;
       display: flex;
       flex-direction: column;
-      gap: 1px;
-      background: var(--border);
     }
 
-    .article-list-item {
-      background: var(--surface);
-      padding: 1rem 1.2rem;
+    .sidebar::-webkit-scrollbar { width: 4px; }
+    .sidebar::-webkit-scrollbar-thumb { background: #333; border-radius: 2px; }
+
+    .sidebar-section-label {
+      font-size: 0.62rem;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--sidebar-section);
+      padding: 1.2rem 1rem 0.4rem;
+    }
+
+    .nav-item {
       display: flex;
-      gap: 1rem;
-      text-decoration: none;
-      color: inherit;
-      transition: background 0.15s;
+      align-items: center;
+      gap: 0.65rem;
+      padding: 0.5rem 1rem;
+      font-size: 0.82rem;
+      color: var(--sidebar-text);
       cursor: pointer;
+      border-radius: 0;
+      transition: background 0.12s;
+      border: none;
+      background: none;
+      width: 100%;
+      text-align: left;
+      position: relative;
     }
 
-    .article-list-item:hover { background: var(--surface2); }
+    .nav-item:hover { background: var(--sidebar-hover); }
 
-    .list-thumb {
-      width: 64px;
-      height: 64px;
-      object-fit: cover;
-      border-radius: 4px;
-      flex-shrink: 0;
-      background: var(--surface2);
+    .nav-item.active {
+      background: var(--sidebar-active);
+      color: #fff;
     }
 
-    .list-thumb-placeholder {
-      width: 64px;
-      height: 64px;
-      background: var(--surface2);
-      border-radius: 4px;
+    .nav-item.active::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 4px;
+      bottom: 4px;
+      width: 3px;
+      background: var(--accent);
+      border-radius: 0 2px 2px 0;
+    }
+
+    .nav-icon {
+      width: 16px;
+      height: 16px;
+      opacity: 0.6;
       flex-shrink: 0;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 1.2rem;
-      opacity: 0.3;
+      font-size: 0.85rem;
     }
 
-    .list-content { flex: 1; min-width: 0; }
+    .nav-item.active .nav-icon { opacity: 1; }
+
+    .nav-count {
+      margin-left: auto;
+      font-size: 0.65rem;
+      background: rgba(255,255,255,0.1);
+      color: var(--sidebar-text-muted);
+      padding: 0.1rem 0.45rem;
+      border-radius: 10px;
+      font-weight: 500;
+    }
+
+    .nav-item.active .nav-count {
+      background: rgba(45,106,79,0.4);
+      color: #6dcfa8;
+    }
+
+    .sidebar-divider {
+      height: 1px;
+      background: var(--sidebar-border);
+      margin: 0.6rem 0;
+    }
+
+    .sidebar-bottom {
+      margin-top: auto;
+      padding: 1rem;
+      border-top: 1px solid var(--sidebar-border);
+    }
+
+    .refresh-time {
+      font-size: 0.65rem;
+      color: var(--sidebar-text-muted);
+      text-align: center;
+    }
+
+    /* ── ARTICLE LIST PANEL ── */
+    .list-panel {
+      width: 380px;
+      flex-shrink: 0;
+      background: var(--white);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .list-header {
+      padding: 1rem 1.2rem 0.8rem;
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+
+    .list-header-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 0.6rem;
+    }
 
     .list-title {
+      font-size: 1.05rem;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .list-subtitle {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+    }
+
+    .sort-tabs {
+      display: flex;
+      gap: 0;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 2px;
+    }
+
+    .sort-tab {
+      font-size: 0.72rem;
+      font-weight: 500;
+      padding: 0.25rem 0.7rem;
+      border: none;
+      background: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      border-radius: 4px;
+      transition: all 0.15s;
+    }
+
+    .sort-tab.active {
+      background: var(--white);
+      color: var(--text);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    }
+
+    .list-scroll {
+      flex: 1;
+      overflow-y: auto;
+      scrollbar-width: thin;
+      scrollbar-color: var(--border-dark) transparent;
+    }
+
+    .list-scroll::-webkit-scrollbar { width: 4px; }
+    .list-scroll::-webkit-scrollbar-thumb { background: var(--border-dark); border-radius: 2px; }
+
+    /* Article row */
+    .article-row {
+      display: flex;
+      gap: 0.75rem;
+      padding: 0.9rem 1.2rem;
+      border-bottom: 1px solid var(--border);
+      cursor: pointer;
+      transition: background 0.12s;
+      position: relative;
+      text-decoration: none;
+      color: inherit;
+    }
+
+    .article-row:hover { background: var(--bg); }
+    .article-row.active { background: var(--accent-light); }
+
+    .article-row.unread::after {
+      content: '';
+      position: absolute;
+      left: 0.4rem;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 5px;
+      height: 5px;
+      background: var(--unread-dot);
+      border-radius: 50%;
+    }
+
+    .row-thumb {
+      width: 72px;
+      height: 56px;
+      object-fit: cover;
+      border-radius: 5px;
+      flex-shrink: 0;
+      background: var(--bg);
+    }
+
+    .row-thumb-placeholder {
+      width: 72px;
+      height: 56px;
+      border-radius: 5px;
+      flex-shrink: 0;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.3rem;
+      color: var(--border-dark);
+    }
+
+    .row-content { flex: 1; min-width: 0; }
+
+    .row-source {
+      font-size: 0.65rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--accent);
+      margin-bottom: 0.2rem;
+    }
+
+    .row-title {
       font-size: 0.83rem;
       font-weight: 500;
       line-height: 1.4;
@@ -535,533 +442,657 @@
       -webkit-line-clamp: 2;
       -webkit-box-orient: vertical;
       overflow: hidden;
+      margin-bottom: 0.3rem;
     }
 
-    .list-meta {
+    .row-meta {
+      font-size: 0.68rem;
+      color: var(--text-light);
+    }
+
+    /* ── READER PANEL ── */
+    .reader-panel {
+      flex: 1;
+      background: var(--bg);
+      overflow-y: auto;
       display: flex;
-      gap: 0.5rem;
-      margin-top: 0.35rem;
-      align-items: center;
+      flex-direction: column;
     }
 
-    .list-source {
-      font-family: var(--font-mono);
-      font-size: 0.58rem;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      color: var(--accent);
-    }
-
-    .list-time {
-      font-family: var(--font-mono);
-      font-size: 0.58rem;
-      color: var(--text-dim);
-    }
-
-    /* LOADING STATE */
-    .skeleton-section {
-      margin-bottom: 2.5rem;
-    }
-
-    .skeleton-header {
-      height: 24px;
-      width: 200px;
-      background: var(--surface2);
-      border-radius: 4px;
-      margin-bottom: 1.2rem;
-      animation: shimmer 1.5s infinite;
-    }
-
-    .skeleton-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 1px;
-      background: var(--border);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      overflow: hidden;
-    }
-
-    .skeleton-card {
-      background: var(--surface);
-      height: 280px;
-      animation: shimmer 1.5s infinite;
-    }
-
-    .skeleton-card:first-child {
-      grid-row: span 2;
-      height: 100%;
-    }
-
-    @keyframes shimmer {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0.5; }
-    }
-
-    /* ERROR STATE */
-    .error-state {
-      background: var(--surface);
-      border: 1px solid rgba(255, 60, 60, 0.2);
-      border-radius: 8px;
-      padding: 2rem;
-      text-align: center;
-    }
-
-    .error-icon { font-size: 2rem; margin-bottom: 0.5rem; }
-    .error-title {
-      font-family: var(--font-display);
-      font-size: 1.2rem;
-      letter-spacing: 0.05em;
-      color: var(--accent);
-      margin-bottom: 0.4rem;
-    }
-    .error-msg { font-size: 0.8rem; color: var(--text-muted); }
-
-    /* EMPTY */
-    .empty-state {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 2rem;
-      text-align: center;
-    }
-
-    .empty-state p { color: var(--text-muted); font-size: 0.85rem; }
-
-    /* FOOTER */
-    footer {
-      margin-top: 4rem;
-      padding: 2rem;
-      border-top: 1px solid var(--border);
-      text-align: center;
-    }
-
-    .footer-inner {
-      max-width: 1600px;
-      margin: 0 auto;
+    .reader-empty {
+      flex: 1;
       display: flex;
+      flex-direction: column;
       align-items: center;
-      justify-content: space-between;
+      justify-content: center;
+      gap: 0.8rem;
+      color: var(--text-muted);
+      padding: 2rem;
     }
 
-    .footer-logo {
-      font-family: var(--font-display);
+    .reader-empty-icon {
+      font-size: 2.5rem;
+      opacity: 0.3;
+    }
+
+    .reader-empty h3 {
       font-size: 1rem;
-      letter-spacing: 0.15em;
-      color: var(--text-dim);
+      font-weight: 500;
+      color: var(--text-muted);
     }
 
-    .footer-note {
-      font-family: var(--font-mono);
-      font-size: 0.65rem;
-      color: var(--text-dim);
-      letter-spacing: 0.05em;
+    .reader-empty p {
+      font-size: 0.82rem;
+      color: var(--text-light);
+      text-align: center;
+      max-width: 260px;
+      line-height: 1.6;
     }
 
-    /* Scrollbar */
-    ::-webkit-scrollbar { width: 6px; }
-    ::-webkit-scrollbar-track { background: var(--bg); }
-    ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
-
-    /* Responsive */
-    @media (max-width: 1100px) {
-      .main-layout {
-        grid-template-columns: 1fr;
-      }
-      .sidebar { position: static; }
+    .reader-content {
+      max-width: 680px;
+      margin: 0 auto;
+      padding: 2.5rem 2rem;
+      width: 100%;
     }
 
-    @media (max-width: 700px) {
-      .header-inner { padding: 0; }
-      .main-layout { padding: 1rem; }
-      .article-grid.has-featured { grid-template-columns: 1fr; }
-      .article-card.featured { grid-row: auto; }
+    .reader-source-bar {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      margin-bottom: 1.2rem;
     }
 
-    /* Separator line */
-    .h-rule {
-      display: inline-block;
-      width: 40px;
-      height: 2px;
+    .reader-source-name {
+      font-size: 0.72rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--accent);
+    }
+
+    .reader-source-dot {
+      width: 3px;
+      height: 3px;
+      background: var(--text-light);
+      border-radius: 50%;
+    }
+
+    .reader-date {
+      font-size: 0.72rem;
+      color: var(--text-light);
+    }
+
+    .reader-title {
+      font-family: 'Merriweather', serif;
+      font-size: 1.7rem;
+      font-weight: 700;
+      line-height: 1.35;
+      color: var(--text);
+      margin-bottom: 1.2rem;
+    }
+
+    .reader-image {
+      width: 100%;
+      max-height: 340px;
+      object-fit: cover;
+      border-radius: 8px;
+      margin-bottom: 1.5rem;
+      background: var(--border);
+    }
+
+    .reader-summary {
+      font-size: 0.95rem;
+      line-height: 1.8;
+      color: #333;
+      margin-bottom: 1.8rem;
+    }
+
+    .reader-open-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.65rem 1.2rem;
       background: var(--accent);
-      margin-right: 0.6rem;
-      vertical-align: middle;
+      color: white;
+      border-radius: 6px;
+      font-size: 0.82rem;
+      font-weight: 500;
+      text-decoration: none;
+      transition: background 0.15s;
+      border: none;
+      cursor: pointer;
+    }
+
+    .reader-open-btn:hover { background: var(--accent-hover); }
+
+    /* ── SKELETON ── */
+    .skeleton {
+      background: linear-gradient(90deg, var(--bg) 25%, var(--border) 50%, var(--bg) 75%);
+      background-size: 200% 100%;
+      animation: skeleton-anim 1.4s infinite;
+      border-radius: 4px;
+    }
+
+    @keyframes skeleton-anim {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+
+    .skeleton-row {
+      padding: 0.9rem 1.2rem;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      gap: 0.75rem;
+    }
+
+    .sk-thumb { width: 72px; height: 56px; border-radius: 5px; flex-shrink: 0; }
+    .sk-body { flex: 1; display: flex; flex-direction: column; gap: 0.4rem; padding-top: 0.2rem; }
+    .sk-line { height: 10px; }
+    .sk-short { width: 40%; }
+    .sk-med { width: 80%; }
+    .sk-long { width: 95%; }
+
+    /* ── LOAD MORE ── */
+    .load-more-btn {
+      display: block;
+      width: calc(100% - 2.4rem);
+      margin: 0.8rem 1.2rem 1.2rem;
+      padding: 0.6rem;
+      background: none;
+      border: 1px solid var(--border-dark);
+      border-radius: 6px;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .load-more-btn:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+      background: var(--accent-light);
+    }
+
+    /* ── FILTER BAR ── */
+    .filter-bar {
+      display: flex;
+      gap: 0.4rem;
+      padding: 0.6rem 1.2rem;
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+
+    .filter-bar::-webkit-scrollbar { display: none; }
+
+    .filter-chip {
+      flex-shrink: 0;
+      padding: 0.2rem 0.7rem;
+      border: 1px solid var(--border-dark);
+      border-radius: 20px;
+      font-size: 0.7rem;
+      font-weight: 500;
+      color: var(--text-muted);
+      background: var(--white);
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .filter-chip:hover { border-color: var(--accent); color: var(--accent); }
+
+    .filter-chip.active {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: white;
+    }
+
+    /* ── ERROR ── */
+    .error-banner {
+      margin: 1rem 1.2rem;
+      padding: 0.8rem 1rem;
+      background: #fff5f5;
+      border: 1px solid #fecaca;
+      border-radius: 6px;
+      font-size: 0.78rem;
+      color: #b91c1c;
+    }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 900px) {
+      :root { --sidebar-w: 200px; }
+      .reader-panel { display: none; }
+      .list-panel { flex: 1; width: 100%; }
+    }
+
+    @media (max-width: 600px) {
+      .sidebar { display: none; }
+      .topbar-logo { display: none; }
     }
   </style>
 </head>
 <body>
 
-  <!-- HEADER -->
-  <header>
-    <div class="header-inner">
-      <a class="logo" href="#">
-        <span class="logo-dot"></span>
-        SIGNAL
-      </a>
-      <div class="header-meta">
-        <div class="live-badge">
-          <div class="live-dot"></div>
-          LIVE FEED
-        </div>
-        <button class="refresh-btn" id="refreshBtn" onclick="loadFeeds()">↺ REFRESH</button>
+  <!-- TOP BAR -->
+  <div class="topbar">
+    <div class="topbar-logo">
+      <div class="logo-mark">
+        <svg viewBox="0 0 16 16"><path d="M2 4h12v1.5H2zm0 3h9v1.5H2zm0 3h10v1.5H2z"/></svg>
+      </div>
+      <span class="logo-name">Signal</span>
+    </div>
+    <div class="topbar-search">
+      <div class="search-wrap">
+        <span class="search-icon">
+          <svg width="13" height="13" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="9" r="6"/><path d="m15 15 3 3"/></svg>
+        </span>
+        <input class="search-input" type="text" placeholder="Search articles…" id="searchInput" oninput="filterArticles()" />
       </div>
     </div>
-  </header>
-
-  <!-- CHANNEL NAV -->
-  <nav class="channel-nav">
-    <div class="channel-nav-inner" id="channelNav">
-      <button class="channel-tab active" data-channel="all" onclick="switchChannel('all', this)">
-        <span class="tab-icon">◈</span> All
-      </button>
-      <button class="channel-tab" data-channel="tech" onclick="switchChannel('tech', this)">
-        <span class="tab-icon">⚡</span> Tech
-      </button>
-      <button class="channel-tab" data-channel="gaming" onclick="switchChannel('gaming', this)">
-        <span class="tab-icon">◎</span> Gaming
-      </button>
-      <button class="channel-tab" data-channel="rockstar" onclick="switchChannel('rockstar', this)">
-        <span class="tab-icon">★</span> Rockstar
-      </button>
-      <button class="channel-tab" data-channel="capcom" onclick="switchChannel('capcom', this)">
-        <span class="tab-icon">◆</span> Capcom
-      </button>
-      <button class="channel-tab" data-channel="activision" onclick="switchChannel('activision', this)">
-        <span class="tab-icon">◉</span> Activision
-      </button>
-      <button class="channel-tab" data-channel="cdpr" onclick="switchChannel('cdpr', this)">
-        <span class="tab-icon">▲</span> CD Projekt
-      </button>
-      <button class="channel-tab" data-channel="ai" onclick="switchChannel('ai', this)">
-        <span class="tab-icon">◇</span> AI
+    <div class="topbar-right">
+      <div class="live-pill"><div class="live-dot"></div> Live</div>
+      <button class="topbar-btn" id="refreshBtn" onclick="loadFeeds()">
+        <svg width="12" height="12" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 4v6h6"/><path d="M19 16v-6h-6"/><path d="M17.5 9A7.5 7.5 0 0 0 3.2 6.2M2.5 11A7.5 7.5 0 0 0 16.8 13.8"/></svg>
+        Refresh
       </button>
     </div>
-  </nav>
-
-  <!-- MAIN -->
-  <div class="main-layout">
-    <!-- SIDEBAR -->
-    <aside class="sidebar" id="sidebar">
-      <div class="sidebar-block">
-        <div class="sidebar-title">Stats</div>
-        <div class="stats-grid">
-          <div class="stat-item">
-            <div class="stat-value" id="statArticles">—</div>
-            <div class="stat-label">Articles</div>
-          </div>
-          <div class="stat-item">
-            <div class="stat-value" id="statSources">—</div>
-            <div class="stat-label">Sources</div>
-          </div>
-          <div class="stat-item">
-            <div class="stat-value" id="statChannels">—</div>
-            <div class="stat-label">Channels</div>
-          </div>
-          <div class="stat-item">
-            <div class="stat-value" id="statTime">—</div>
-            <div class="stat-label">Updated</div>
-          </div>
-        </div>
-      </div>
-
-      <div class="sidebar-block">
-        <div class="sidebar-title">Sources</div>
-        <ul class="source-list" id="sourceList">
-          <li class="source-item"><span>Loading...</span><span class="source-dot"></span></li>
-        </ul>
-      </div>
-    </aside>
-
-    <!-- FEED -->
-    <main id="feedArea" class="feed-area">
-      <!-- Skeleton loaders -->
-      <div class="skeleton-section" id="skeletonLoader">
-        <div class="skeleton-header"></div>
-        <div class="skeleton-grid">
-          <div class="skeleton-card" style="grid-row:span 2"></div>
-          <div class="skeleton-card"></div>
-          <div class="skeleton-card"></div>
-        </div>
-      </div>
-      <div class="skeleton-section">
-        <div class="skeleton-header" style="width:140px"></div>
-        <div class="skeleton-grid">
-          <div class="skeleton-card" style="grid-row:span 2"></div>
-          <div class="skeleton-card"></div>
-          <div class="skeleton-card"></div>
-        </div>
-      </div>
-    </main>
   </div>
 
-  <footer>
-    <div class="footer-inner">
-      <div class="footer-logo">SIGNAL</div>
-      <div class="footer-note">RSS aggregator — Tech & Gaming — Updates every 5 min</div>
+  <!-- BODY -->
+  <div class="body-wrap">
+
+    <!-- SIDEBAR -->
+    <nav class="sidebar" id="sidebar">
+      <div class="sidebar-section-label">Feeds</div>
+
+      <button class="nav-item active" data-channel="all" onclick="switchChannel('all', this)">
+        <span class="nav-icon">🏠</span> All Channels
+        <span class="nav-count" id="count-all">—</span>
+      </button>
+
+      <div class="sidebar-divider"></div>
+      <div class="sidebar-section-label">Technology</div>
+
+      <button class="nav-item" data-channel="tech" onclick="switchChannel('tech', this)">
+        <span class="nav-icon">💻</span> Tech News
+        <span class="nav-count" id="count-tech">—</span>
+      </button>
+
+      <button class="nav-item" data-channel="ai" onclick="switchChannel('ai', this)">
+        <span class="nav-icon">🤖</span> AI
+        <span class="nav-count" id="count-ai">—</span>
+      </button>
+
+      <div class="sidebar-divider"></div>
+      <div class="sidebar-section-label">Gaming</div>
+
+      <button class="nav-item" data-channel="gaming" onclick="switchChannel('gaming', this)">
+        <span class="nav-icon">🎮</span> Gaming News
+        <span class="nav-count" id="count-gaming">—</span>
+      </button>
+
+      <button class="nav-item" data-channel="rockstar" onclick="switchChannel('rockstar', this)">
+        <span class="nav-icon">⭐</span> Rockstar
+        <span class="nav-count" id="count-rockstar">—</span>
+      </button>
+
+      <button class="nav-item" data-channel="capcom" onclick="switchChannel('capcom', this)">
+        <span class="nav-icon">🎌</span> Capcom
+        <span class="nav-count" id="count-capcom">—</span>
+      </button>
+
+      <button class="nav-item" data-channel="activision" onclick="switchChannel('activision', this)">
+        <span class="nav-icon">🔫</span> Activision
+        <span class="nav-count" id="count-activision">—</span>
+      </button>
+
+      <button class="nav-item" data-channel="cdpr" onclick="switchChannel('cdpr', this)">
+        <span class="nav-icon">🔺</span> CD Projekt Red
+        <span class="nav-count" id="count-cdpr">—</span>
+      </button>
+
+      <div class="sidebar-bottom">
+        <div class="refresh-time" id="lastUpdated">Not yet loaded</div>
+      </div>
+    </nav>
+
+    <!-- LIST PANEL -->
+    <div class="list-panel">
+      <div class="list-header">
+        <div class="list-header-top">
+          <div>
+            <div class="list-title" id="listTitle">All Channels</div>
+            <div class="list-subtitle" id="listSubtitle">Loading feeds…</div>
+          </div>
+          <div class="sort-tabs">
+            <button class="sort-tab active" onclick="setSortNewest(this)">Newest</button>
+            <button class="sort-tab" onclick="setSortOldest(this)">Oldest</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="filter-bar" id="filterBar"></div>
+
+      <div class="list-scroll" id="listScroll">
+        <!-- Skeletons -->
+        <div id="skeletonList">
+          ${Array(8).fill(0).map(() => `
+          <div class="skeleton-row">
+            <div class="skeleton sk-thumb"></div>
+            <div class="sk-body">
+              <div class="skeleton sk-line sk-short"></div>
+              <div class="skeleton sk-line sk-long"></div>
+              <div class="skeleton sk-line sk-med"></div>
+              <div class="skeleton sk-line sk-short" style="width:30%"></div>
+            </div>
+          </div>`).join('')}
+        </div>
+      </div>
     </div>
-  </footer>
+
+    <!-- READER PANEL -->
+    <div class="reader-panel" id="readerPanel">
+      <div class="reader-empty" id="readerEmpty">
+        <div class="reader-empty-icon">📰</div>
+        <h3>Select an article to read</h3>
+        <p>Pick any story from the list to preview it here, or open it in a new tab.</p>
+      </div>
+      <div class="reader-content" id="readerContent" style="display:none"></div>
+    </div>
+
+  </div>
 
   <script>
-    const CHANNEL_META = {
-      all:        { label: 'All Channels', badge: '', icon: '◈' },
-      tech:       { label: 'Technology',   badge: 'badge-tech',   icon: '⚡' },
-      gaming:     { label: 'Gaming',       badge: 'badge-gaming', icon: '◎' },
-      rockstar:   { label: 'Rockstar Games', badge: 'badge-studio', icon: '★' },
-      capcom:     { label: 'Capcom',       badge: 'badge-studio', icon: '◆' },
-      activision: { label: 'Activision',   badge: 'badge-studio', icon: '◉' },
-      cdpr:       { label: 'CD Projekt Red', badge: 'badge-studio', icon: '▲' },
-      ai:         { label: 'Artificial Intelligence', badge: 'badge-ai', icon: '◇' },
+    // ── DATA ──────────────────────────────────────────────────────────────
+    const CHANNEL_MAP = {
+      tech:       { label: 'Tech News',       sources: ['The Verge','Ars Technica','Wired','TechCrunch','Hacker News'] },
+      gaming:     { label: 'Gaming News',     sources: ['IGN','Kotaku','PC Gamer','Rock Paper Shotgun','Eurogamer'] },
+      rockstar:   { label: 'Rockstar Games',  sources: ['Rockstar News','GTAForums'] },
+      capcom:     { label: 'Capcom',          sources: ['Capcom News'] },
+      activision: { label: 'Activision',      sources: ['Call of Duty Blog'] },
+      cdpr:       { label: 'CD Projekt Red',  sources: ['CD Projekt Blog'] },
+      ai:         { label: 'AI',              sources: ['MIT Tech Review AI','VentureBeat AI'] },
     };
 
-    const CHANNEL_ICONS = {
-      tech: '⚡', gaming: '◎', rockstar: '★', capcom: '◆',
-      activision: '◉', cdpr: '▲', ai: '◇',
-    };
-
+    let allItems = [];
+    let filteredItems = [];
     let currentChannel = 'all';
-    let allFeedsData = null;
+    let sortNewest = true;
+    let activeSource = null;
+    let searchQuery = '';
 
-    function relTime(dateStr) {
-      if (!dateStr) return 'Unknown';
-      const d = new Date(dateStr);
-      if (isNaN(d)) return '';
-      const diff = (Date.now() - d) / 1000;
-      if (diff < 60) return 'Just now';
-      if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
-      if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
-      return `${Math.floor(diff / 86400)}d ago`;
+    // ── UTILS ─────────────────────────────────────────────────────────────
+    function relTime(d) {
+      if (!d) return '';
+      const diff = (Date.now() - new Date(d)) / 1000;
+      if (diff < 60) return 'just now';
+      if (diff < 3600) return `${Math.floor(diff/60)}m ago`;
+      if (diff < 86400) return `${Math.floor(diff/3600)}h ago`;
+      if (diff < 604800) return `${Math.floor(diff/86400)}d ago`;
+      return new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
     }
 
-    function switchChannel(channel, el) {
-      currentChannel = channel;
-      document.querySelectorAll('.channel-tab').forEach(t => t.classList.remove('active'));
-      el.classList.add('active');
-      if (allFeedsData) renderFeeds(allFeedsData, channel);
-      else loadFeeds();
+    function esc(s) {
+      if (!s) return '';
+      return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
     }
 
+    function channelForSource(sourceName) {
+      for (const [ch, meta] of Object.entries(CHANNEL_MAP)) {
+        if (meta.sources.includes(sourceName)) return ch;
+      }
+      return 'other';
+    }
+
+    // ── FETCH ─────────────────────────────────────────────────────────────
     async function loadFeeds() {
       const btn = document.getElementById('refreshBtn');
       btn.classList.add('loading');
-      btn.textContent = '↺ LOADING';
+      btn.querySelector('svg').style.animation = 'spin 1s linear infinite';
 
-      const feedArea = document.getElementById('feedArea');
       // Show skeleton
-      feedArea.innerHTML = `
-        <div class="skeleton-section">
-          <div class="skeleton-header"></div>
-          <div class="skeleton-grid">
-            <div class="skeleton-card" style="grid-row:span 2;height:100%"></div>
-            <div class="skeleton-card"></div>
-            <div class="skeleton-card"></div>
-          </div>
-        </div>
-        <div class="skeleton-section">
-          <div class="skeleton-header" style="width:160px"></div>
-          <div class="skeleton-grid">
-            <div class="skeleton-card" style="grid-row:span 2;height:100%"></div>
-            <div class="skeleton-card"></div>
-            <div class="skeleton-card"></div>
-          </div>
-        </div>`;
+      document.getElementById('listSubtitle').textContent = 'Loading feeds…';
+      document.getElementById('skeletonList').style.display = 'block';
 
       try {
-        const res = await fetch(`/api/feeds?channel=all`);
+        const res = await fetch('/api/feeds?channel=all');
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data = await res.json();
-        allFeedsData = data;
-        renderFeeds(data, currentChannel);
-        updateStats(data);
-        updateSourceList(data);
+
+        // Flatten all items
+        allItems = data.feeds.flatMap(f =>
+          (f.items || []).map(item => ({
+            ...item,
+            source: f.source,
+            channel: channelForSource(f.source),
+          }))
+        );
+
+        document.getElementById('skeletonList').style.display = 'none';
+        document.getElementById('lastUpdated').textContent = 'Updated ' + new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+        updateCounts();
+        applyFilters();
+
       } catch (err) {
-        feedArea.innerHTML = `
-          <div class="error-state">
-            <div class="error-icon">⚠</div>
-            <div class="error-title">Feed Error</div>
-            <div class="error-msg">${err.message}. Make sure the API is deployed and CORS is configured.</div>
-          </div>`;
+        document.getElementById('listScroll').insertAdjacentHTML('afterbegin',
+          `<div class="error-banner">Failed to load feeds: ${esc(err.message)}</div>`);
       } finally {
         btn.classList.remove('loading');
-        btn.textContent = '↺ REFRESH';
+        btn.querySelector('svg').style.animation = '';
       }
     }
 
-    function groupFeedsByChannel(feeds) {
-      const channelMap = {
-        tech: ['The Verge','Ars Technica','Wired','TechCrunch','Hacker News'],
-        gaming: ['IGN','Kotaku','PC Gamer','Rock Paper Shotgun','Eurogamer'],
-        rockstar: ['Rockstar News','GTAForums'],
-        capcom: ['Capcom News'],
-        activision: ['Call of Duty Blog'],
-        cdpr: ['CD Projekt Blog'],
-        ai: ['MIT Tech Review AI','VentureBeat AI'],
-      };
-      const result = {};
-      for (const [channel, sources] of Object.entries(channelMap)) {
-        result[channel] = feeds.filter(f => sources.includes(f.source));
-      }
-      return result;
-    }
+    function updateCounts() {
+      const all = allItems.length;
+      document.getElementById('count-all').textContent = all;
 
-    function renderFeeds(data, channel) {
-      const feedArea = document.getElementById('feedArea');
-      feedArea.innerHTML = '';
-
-      // Flatten all items from all feeds per channel
-      const grouped = groupFeedsByChannel(data.feeds);
-
-      const channelsToShow = channel === 'all'
-        ? Object.keys(grouped)
-        : [channel];
-
-      let rendered = 0;
-
-      for (const ch of channelsToShow) {
-        const feeds = grouped[ch] || [];
-        const allItems = feeds
-          .flatMap(f => f.items.map(item => ({ ...item, feedSource: f.source })))
-          .sort((a, b) => new Date(b.pubDate) - new Date(a.pubDate))
-          .slice(0, 8);
-
-        if (!allItems.length) continue;
-
-        const meta = CHANNEL_META[ch] || { label: ch, badge: '', icon: '◈' };
-        const section = document.createElement('div');
-        section.className = 'channel-section';
-        section.style.animationDelay = `${rendered * 0.08}s`;
-
-        const badgeHtml = meta.badge
-          ? `<span class="section-badge ${meta.badge}">${meta.icon} ${meta.label}</span>`
-          : '';
-
-        section.innerHTML = `
-          <div class="section-header">
-            <div class="section-name"><span class="h-rule"></span>${meta.label.toUpperCase()}</div>
-            <div class="section-count">${allItems.length} articles</div>
-            ${badgeHtml}
-          </div>
-          ${buildArticleGrid(allItems)}
-        `;
-
-        feedArea.appendChild(section);
-        rendered++;
-      }
-
-      if (rendered === 0) {
-        feedArea.innerHTML = `<div class="empty-state"><p>No articles found for this channel. The RSS feeds may be temporarily unavailable.</p></div>`;
+      for (const [ch, meta] of Object.entries(CHANNEL_MAP)) {
+        const count = allItems.filter(i => i.channel === ch).length;
+        const el = document.getElementById(`count-${ch}`);
+        if (el) el.textContent = count;
       }
     }
 
-    function buildArticleGrid(items) {
-      const featured = items[0];
-      const secondary = items.slice(1, 3);
-      const rest = items.slice(3);
+    // ── CHANNEL SWITCH ────────────────────────────────────────────────────
+    function switchChannel(channel, el) {
+      currentChannel = channel;
+      activeSource = null;
+      document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+      el.classList.add('active');
 
-      const featuredHtml = buildFeaturedCard(featured);
-      const secondaryHtml = secondary.map(buildSecondaryCard).join('');
-      const restHtml = rest.length
-        ? `<div class="article-list">${rest.map(buildListItem).join('')}</div>`
+      const meta = CHANNEL_MAP[channel];
+      document.getElementById('listTitle').textContent = meta ? meta.label : 'All Channels';
+
+      buildFilterBar(channel);
+      applyFilters();
+      clearReader();
+    }
+
+    function buildFilterBar(channel) {
+      const bar = document.getElementById('filterBar');
+      bar.innerHTML = '';
+      if (channel === 'all') {
+        // Show channel chips
+        const all = document.createElement('button');
+        all.className = 'filter-chip active';
+        all.textContent = 'All';
+        all.onclick = () => { activeSource = null; document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active')); all.classList.add('active'); applyFilters(); };
+        bar.appendChild(all);
+        for (const [ch, meta] of Object.entries(CHANNEL_MAP)) {
+          const chip = document.createElement('button');
+          chip.className = 'filter-chip';
+          chip.textContent = meta.label;
+          chip.onclick = () => {
+            activeSource = ch;
+            document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+            chip.classList.add('active');
+            applyFilters();
+          };
+          bar.appendChild(chip);
+        }
+      } else if (CHANNEL_MAP[channel]) {
+        const sources = CHANNEL_MAP[channel].sources;
+        const all = document.createElement('button');
+        all.className = 'filter-chip active';
+        all.textContent = 'All sources';
+        all.onclick = () => { activeSource = null; document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active')); all.classList.add('active'); applyFilters(); };
+        bar.appendChild(all);
+        sources.forEach(src => {
+          const chip = document.createElement('button');
+          chip.className = 'filter-chip';
+          chip.textContent = src;
+          chip.onclick = () => {
+            activeSource = src;
+            document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+            chip.classList.add('active');
+            applyFilters();
+          };
+          bar.appendChild(chip);
+        });
+      }
+    }
+
+    // ── FILTER & SORT ─────────────────────────────────────────────────────
+    function applyFilters() {
+      let items = [...allItems];
+
+      // Channel filter
+      if (currentChannel !== 'all') {
+        items = items.filter(i => i.channel === currentChannel);
+      }
+
+      // Source/channel chip filter
+      if (activeSource) {
+        if (currentChannel === 'all') {
+          // activeSource is a channel key
+          items = items.filter(i => i.channel === activeSource);
+        } else {
+          // activeSource is a source name
+          items = items.filter(i => i.source === activeSource);
+        }
+      }
+
+      // Search
+      if (searchQuery) {
+        const q = searchQuery.toLowerCase();
+        items = items.filter(i =>
+          (i.title || '').toLowerCase().includes(q) ||
+          (i.source || '').toLowerCase().includes(q) ||
+          (i.summary || '').toLowerCase().includes(q)
+        );
+      }
+
+      // Sort
+      items.sort((a, b) => {
+        const ta = new Date(a.pubDate || 0);
+        const tb = new Date(b.pubDate || 0);
+        return sortNewest ? tb - ta : ta - tb;
+      });
+
+      filteredItems = items;
+      document.getElementById('listSubtitle').textContent =
+        `${items.length} article${items.length !== 1 ? 's' : ''}`;
+
+      renderList(items);
+    }
+
+    function filterArticles() {
+      searchQuery = document.getElementById('searchInput').value.trim();
+      applyFilters();
+    }
+
+    function setSortNewest(btn) {
+      sortNewest = true;
+      document.querySelectorAll('.sort-tab').forEach(t => t.classList.remove('active'));
+      btn.classList.add('active');
+      applyFilters();
+    }
+
+    function setSortOldest(btn) {
+      sortNewest = false;
+      document.querySelectorAll('.sort-tab').forEach(t => t.classList.remove('active'));
+      btn.classList.add('active');
+      applyFilters();
+    }
+
+    // ── RENDER LIST ───────────────────────────────────────────────────────
+    function renderList(items) {
+      const scroll = document.getElementById('listScroll');
+      scroll.innerHTML = '';
+
+      if (!items.length) {
+        scroll.innerHTML = `<div style="padding:2rem;text-align:center;color:var(--text-muted);font-size:0.85rem;">No articles found.</div>`;
+        return;
+      }
+
+      items.forEach((item, idx) => {
+        const row = document.createElement('div');
+        row.className = 'article-row unread';
+        row.onclick = () => openReader(item, row);
+
+        const thumbHtml = item.thumbnail
+          ? `<img class="row-thumb" src="${esc(item.thumbnail)}" alt="" loading="lazy" onerror="this.style.display='none'">`
+          : `<div class="row-thumb-placeholder">📄</div>`;
+
+        row.innerHTML = `
+          ${thumbHtml}
+          <div class="row-content">
+            <div class="row-source">${esc(item.source)}</div>
+            <div class="row-title">${esc(item.title)}</div>
+            <div class="row-meta">${relTime(item.pubDate)}</div>
+          </div>`;
+
+        scroll.appendChild(row);
+      });
+    }
+
+    // ── READER ────────────────────────────────────────────────────────────
+    function openReader(item, rowEl) {
+      // Mark as read (remove unread dot)
+      document.querySelectorAll('.article-row').forEach(r => r.classList.remove('active'));
+      if (rowEl) {
+        rowEl.classList.add('active');
+        rowEl.classList.remove('unread');
+      }
+
+      document.getElementById('readerEmpty').style.display = 'none';
+      const content = document.getElementById('readerContent');
+      content.style.display = 'block';
+
+      const imgHtml = item.thumbnail
+        ? `<img class="reader-image" src="${esc(item.thumbnail)}" alt="" onerror="this.remove()">`
         : '';
 
-      return `
-        <div class="article-grid ${secondary.length ? 'has-featured' : ''}">
-          ${featuredHtml}
-          ${secondaryHtml}
+      content.innerHTML = `
+        <div class="reader-source-bar">
+          <span class="reader-source-name">${esc(item.source)}</span>
+          <span class="reader-source-dot"></span>
+          <span class="reader-date">${item.pubDate ? new Date(item.pubDate).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }) : ''}</span>
         </div>
-        ${restHtml}
+        <h1 class="reader-title">${esc(item.title)}</h1>
+        ${imgHtml}
+        <p class="reader-summary">${esc(item.summary || 'No summary available. Click the button below to read the full article.')}</p>
+        <a class="reader-open-btn" href="${esc(item.link)}" target="_blank" rel="noopener">
+          Read full article
+          <svg width="13" height="13" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 3h10v10M3 17 17 3"/></svg>
+        </a>
       `;
+
+      document.getElementById('readerPanel').scrollTop = 0;
     }
 
-    function safeImg(src, cls, alt) {
-      if (src) {
-        return `<img class="${cls}" src="${escHtml(src)}" alt="${escHtml(alt)}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" loading="lazy">
-                <div class="${cls}-placeholder" style="display:none"><span class="placeholder-icon">◎</span></div>`;
-      }
-      return `<div class="${cls}-placeholder"><span class="placeholder-icon">◎</span></div>`;
+    function clearReader() {
+      document.getElementById('readerEmpty').style.display = 'flex';
+      document.getElementById('readerContent').style.display = 'none';
     }
 
-    function buildFeaturedCard(item) {
-      return `
-        <a class="article-card featured" href="${escHtml(item.link)}" target="_blank" rel="noopener">
-          ${safeImg(item.thumbnail, 'card-image', item.title)}
-          <div class="card-body">
-            <div class="card-meta">
-              <span class="card-source">${escHtml(item.source)}</span>
-              <span class="card-dot"></span>
-              <span class="card-time">${relTime(item.pubDate)}</span>
-            </div>
-            <div class="card-title">${escHtml(item.title)}</div>
-            <div class="card-summary">${escHtml(item.summary || '')}</div>
-          </div>
-        </a>`;
-    }
-
-    function buildSecondaryCard(item) {
-      return `
-        <a class="article-card" href="${escHtml(item.link)}" target="_blank" rel="noopener">
-          ${safeImg(item.thumbnail, 'card-image', item.title)}
-          <div class="card-body">
-            <div class="card-meta">
-              <span class="card-source">${escHtml(item.source)}</span>
-              <span class="card-dot"></span>
-              <span class="card-time">${relTime(item.pubDate)}</span>
-            </div>
-            <div class="card-title">${escHtml(item.title)}</div>
-          </div>
-        </a>`;
-    }
-
-    function buildListItem(item) {
-      const thumbHtml = item.thumbnail
-        ? `<img class="list-thumb" src="${escHtml(item.thumbnail)}" alt="" loading="lazy" onerror="this.style.display='none'">`
-        : `<div class="list-thumb-placeholder">◎</div>`;
-      return `
-        <a class="article-list-item" href="${escHtml(item.link)}" target="_blank" rel="noopener">
-          ${thumbHtml}
-          <div class="list-content">
-            <div class="list-title">${escHtml(item.title)}</div>
-            <div class="list-meta">
-              <span class="list-source">${escHtml(item.source)}</span>
-              <span class="list-time">${relTime(item.pubDate)}</span>
-            </div>
-          </div>
-        </a>`;
-    }
-
-    function updateStats(data) {
-      const totalArticles = data.feeds.reduce((n, f) => n + f.items.length, 0);
-      const loadedSources = data.feeds.filter(f => f.items.length > 0).length;
-      document.getElementById('statArticles').textContent = totalArticles;
-      document.getElementById('statSources').textContent = loadedSources;
-      document.getElementById('statChannels').textContent = Object.keys(CHANNEL_META).length - 1;
-      document.getElementById('statTime').textContent = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    }
-
-    function updateSourceList(data) {
-      const list = document.getElementById('sourceList');
-      list.innerHTML = data.feeds.map(f => {
-        const cls = f.error ? 'error' : f.items.length ? 'loaded' : '';
-        return `<li class="source-item ${cls}">
-          <span>${escHtml(f.source)}</span>
-          <span class="source-dot"></span>
-        </li>`;
-      }).join('');
-    }
-
-    function escHtml(str) {
-      if (!str) return '';
-      return String(str)
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;');
-    }
-
-    // Auto-refresh every 5 minutes
-    setInterval(loadFeeds, 5 * 60 * 1000);
-
-    // Initial load
+    // ── INIT ──────────────────────────────────────────────────────────────
+    buildFilterBar('all');
     loadFeeds();
+    setInterval(loadFeeds, 5 * 60 * 1000);
   </script>
 </body>
 </html>
