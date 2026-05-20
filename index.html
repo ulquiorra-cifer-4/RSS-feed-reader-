@@ -1,0 +1,1068 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SIGNAL — Tech & Gaming Feed</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #0a0a0b;
+      --surface: #111113;
+      --surface2: #18181c;
+      --border: #222228;
+      --border2: #2e2e38;
+      --text: #e8e8f0;
+      --text-muted: #7a7a90;
+      --text-dim: #4a4a60;
+      --accent: #ff3c3c;
+      --accent2: #ff7a00;
+      --accent3: #00d4ff;
+      --accent4: #a855f7;
+      --green: #00ff88;
+      --font-display: 'Bebas Neue', sans-serif;
+      --font-body: 'DM Sans', sans-serif;
+      --font-mono: 'DM Mono', monospace;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-body);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* Noise texture overlay */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 1000;
+      opacity: 0.4;
+    }
+
+    /* HEADER */
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(10, 10, 11, 0.92);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+      padding: 0 2rem;
+    }
+
+    .header-inner {
+      max-width: 1600px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      gap: 2rem;
+      height: 64px;
+    }
+
+    .logo {
+      font-family: var(--font-display);
+      font-size: 2rem;
+      letter-spacing: 0.08em;
+      color: var(--text);
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      flex-shrink: 0;
+    }
+
+    .logo-dot {
+      width: 8px;
+      height: 8px;
+      background: var(--accent);
+      border-radius: 50%;
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.5; transform: scale(0.8); }
+    }
+
+    .header-meta {
+      margin-left: auto;
+      display: flex;
+      align-items: center;
+      gap: 1.5rem;
+    }
+
+    .live-badge {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      color: var(--green);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+
+    .live-dot {
+      width: 6px;
+      height: 6px;
+      background: var(--green);
+      border-radius: 50%;
+      animation: pulse 1.5s ease-in-out infinite;
+    }
+
+    .refresh-btn {
+      background: none;
+      border: 1px solid var(--border2);
+      color: var(--text-muted);
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      letter-spacing: 0.08em;
+      padding: 0.4rem 0.9rem;
+      cursor: pointer;
+      border-radius: 4px;
+      text-transform: uppercase;
+      transition: all 0.2s;
+    }
+
+    .refresh-btn:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .refresh-btn.loading {
+      opacity: 0.5;
+      pointer-events: none;
+    }
+
+    /* CHANNEL NAV */
+    .channel-nav {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 0 2rem;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+
+    .channel-nav::-webkit-scrollbar { display: none; }
+
+    .channel-nav-inner {
+      max-width: 1600px;
+      margin: 0 auto;
+      display: flex;
+      gap: 0;
+    }
+
+    .channel-tab {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.9rem 1.4rem;
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      cursor: pointer;
+      border: none;
+      background: none;
+      border-bottom: 2px solid transparent;
+      transition: all 0.2s;
+      white-space: nowrap;
+    }
+
+    .channel-tab:hover {
+      color: var(--text);
+    }
+
+    .channel-tab.active {
+      color: var(--text);
+      border-bottom-color: var(--accent);
+    }
+
+    .channel-tab .tab-icon {
+      font-size: 0.9rem;
+    }
+
+    /* MAIN LAYOUT */
+    .main-layout {
+      max-width: 1600px;
+      margin: 0 auto;
+      padding: 2rem;
+      display: grid;
+      grid-template-columns: 260px 1fr;
+      gap: 2rem;
+      align-items: start;
+    }
+
+    /* SIDEBAR */
+    .sidebar {
+      position: sticky;
+      top: 120px;
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+
+    .sidebar-block {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    .sidebar-title {
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--text-dim);
+      padding: 0.8rem 1rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .source-list {
+      list-style: none;
+    }
+
+    .source-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.6rem 1rem;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      border-bottom: 1px solid var(--border);
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .source-item:last-child { border-bottom: none; }
+
+    .source-item:hover { 
+      background: var(--surface2);
+      color: var(--text);
+    }
+
+    .source-item.active {
+      color: var(--accent);
+      background: rgba(255, 60, 60, 0.05);
+    }
+
+    .source-dot {
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: var(--border2);
+      flex-shrink: 0;
+    }
+
+    .source-item.active .source-dot { background: var(--accent); }
+    .source-item.loaded .source-dot { background: var(--green); }
+    .source-item.error .source-dot { background: var(--accent2); }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0;
+    }
+
+    .stat-item {
+      padding: 1rem;
+      border-right: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .stat-item:nth-child(2), .stat-item:nth-child(4) { border-right: none; }
+    .stat-item:nth-child(3), .stat-item:nth-child(4) { border-bottom: none; }
+
+    .stat-value {
+      font-family: var(--font-display);
+      font-size: 1.8rem;
+      letter-spacing: 0.05em;
+      color: var(--text);
+      line-height: 1;
+    }
+
+    .stat-label {
+      font-family: var(--font-mono);
+      font-size: 0.6rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text-dim);
+      margin-top: 0.3rem;
+    }
+
+    /* FEED AREA */
+    .feed-area {
+      display: flex;
+      flex-direction: column;
+      gap: 2.5rem;
+    }
+
+    /* CHANNEL SECTION */
+    .channel-section {
+      animation: slideUp 0.4s ease both;
+    }
+
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .section-header {
+      display: flex;
+      align-items: baseline;
+      gap: 1rem;
+      margin-bottom: 1.2rem;
+      padding-bottom: 0.8rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .section-name {
+      font-family: var(--font-display);
+      font-size: 1.5rem;
+      letter-spacing: 0.08em;
+      color: var(--text);
+    }
+
+    .section-count {
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      color: var(--text-dim);
+      letter-spacing: 0.1em;
+    }
+
+    .section-badge {
+      margin-left: auto;
+      font-family: var(--font-mono);
+      font-size: 0.6rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 0.2rem 0.6rem;
+      border-radius: 3px;
+    }
+
+    .badge-tech { background: rgba(0, 212, 255, 0.1); color: var(--accent3); border: 1px solid rgba(0, 212, 255, 0.2); }
+    .badge-gaming { background: rgba(168, 85, 247, 0.1); color: var(--accent4); border: 1px solid rgba(168, 85, 247, 0.2); }
+    .badge-studio { background: rgba(255, 60, 60, 0.1); color: var(--accent); border: 1px solid rgba(255, 60, 60, 0.2); }
+    .badge-ai { background: rgba(0, 255, 136, 0.1); color: var(--green); border: 1px solid rgba(0, 255, 136, 0.2); }
+
+    /* ARTICLE GRID — featured + list */
+    .article-grid {
+      display: grid;
+      gap: 1px;
+      background: var(--border);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    .article-grid.has-featured {
+      grid-template-columns: 1fr 1fr;
+      grid-template-rows: auto;
+    }
+
+    .article-card {
+      background: var(--surface);
+      transition: background 0.15s;
+      cursor: pointer;
+      text-decoration: none;
+      color: inherit;
+      display: block;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .article-card:hover { background: var(--surface2); }
+
+    /* Featured (first) card */
+    .article-card.featured {
+      grid-row: 1 / 3;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .card-image {
+      width: 100%;
+      height: 220px;
+      object-fit: cover;
+      display: block;
+      background: var(--surface2);
+    }
+
+    .featured .card-image {
+      height: 280px;
+    }
+
+    .card-image-placeholder {
+      width: 100%;
+      height: 220px;
+      background: var(--surface2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .featured .card-image-placeholder {
+      height: 280px;
+    }
+
+    .placeholder-icon {
+      font-size: 2.5rem;
+      opacity: 0.2;
+    }
+
+    .card-body {
+      padding: 1rem 1.2rem;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .card-meta {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+
+    .card-source {
+      font-family: var(--font-mono);
+      font-size: 0.6rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--accent);
+    }
+
+    .card-time {
+      font-family: var(--font-mono);
+      font-size: 0.6rem;
+      color: var(--text-dim);
+      letter-spacing: 0.05em;
+    }
+
+    .card-dot {
+      width: 2px;
+      height: 2px;
+      background: var(--text-dim);
+      border-radius: 50%;
+    }
+
+    .card-title {
+      font-size: 0.92rem;
+      font-weight: 500;
+      line-height: 1.4;
+      color: var(--text);
+    }
+
+    .featured .card-title {
+      font-size: 1.1rem;
+    }
+
+    .card-summary {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      line-height: 1.6;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    /* List-style cards (3+ in column) */
+    .article-list {
+      display: flex;
+      flex-direction: column;
+      gap: 1px;
+      background: var(--border);
+    }
+
+    .article-list-item {
+      background: var(--surface);
+      padding: 1rem 1.2rem;
+      display: flex;
+      gap: 1rem;
+      text-decoration: none;
+      color: inherit;
+      transition: background 0.15s;
+      cursor: pointer;
+    }
+
+    .article-list-item:hover { background: var(--surface2); }
+
+    .list-thumb {
+      width: 64px;
+      height: 64px;
+      object-fit: cover;
+      border-radius: 4px;
+      flex-shrink: 0;
+      background: var(--surface2);
+    }
+
+    .list-thumb-placeholder {
+      width: 64px;
+      height: 64px;
+      background: var(--surface2);
+      border-radius: 4px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2rem;
+      opacity: 0.3;
+    }
+
+    .list-content { flex: 1; min-width: 0; }
+
+    .list-title {
+      font-size: 0.83rem;
+      font-weight: 500;
+      line-height: 1.4;
+      color: var(--text);
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .list-meta {
+      display: flex;
+      gap: 0.5rem;
+      margin-top: 0.35rem;
+      align-items: center;
+    }
+
+    .list-source {
+      font-family: var(--font-mono);
+      font-size: 0.58rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--accent);
+    }
+
+    .list-time {
+      font-family: var(--font-mono);
+      font-size: 0.58rem;
+      color: var(--text-dim);
+    }
+
+    /* LOADING STATE */
+    .skeleton-section {
+      margin-bottom: 2.5rem;
+    }
+
+    .skeleton-header {
+      height: 24px;
+      width: 200px;
+      background: var(--surface2);
+      border-radius: 4px;
+      margin-bottom: 1.2rem;
+      animation: shimmer 1.5s infinite;
+    }
+
+    .skeleton-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1px;
+      background: var(--border);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    .skeleton-card {
+      background: var(--surface);
+      height: 280px;
+      animation: shimmer 1.5s infinite;
+    }
+
+    .skeleton-card:first-child {
+      grid-row: span 2;
+      height: 100%;
+    }
+
+    @keyframes shimmer {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+
+    /* ERROR STATE */
+    .error-state {
+      background: var(--surface);
+      border: 1px solid rgba(255, 60, 60, 0.2);
+      border-radius: 8px;
+      padding: 2rem;
+      text-align: center;
+    }
+
+    .error-icon { font-size: 2rem; margin-bottom: 0.5rem; }
+    .error-title {
+      font-family: var(--font-display);
+      font-size: 1.2rem;
+      letter-spacing: 0.05em;
+      color: var(--accent);
+      margin-bottom: 0.4rem;
+    }
+    .error-msg { font-size: 0.8rem; color: var(--text-muted); }
+
+    /* EMPTY */
+    .empty-state {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 2rem;
+      text-align: center;
+    }
+
+    .empty-state p { color: var(--text-muted); font-size: 0.85rem; }
+
+    /* FOOTER */
+    footer {
+      margin-top: 4rem;
+      padding: 2rem;
+      border-top: 1px solid var(--border);
+      text-align: center;
+    }
+
+    .footer-inner {
+      max-width: 1600px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .footer-logo {
+      font-family: var(--font-display);
+      font-size: 1rem;
+      letter-spacing: 0.15em;
+      color: var(--text-dim);
+    }
+
+    .footer-note {
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      color: var(--text-dim);
+      letter-spacing: 0.05em;
+    }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: var(--bg); }
+    ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+
+    /* Responsive */
+    @media (max-width: 1100px) {
+      .main-layout {
+        grid-template-columns: 1fr;
+      }
+      .sidebar { position: static; }
+    }
+
+    @media (max-width: 700px) {
+      .header-inner { padding: 0; }
+      .main-layout { padding: 1rem; }
+      .article-grid.has-featured { grid-template-columns: 1fr; }
+      .article-card.featured { grid-row: auto; }
+    }
+
+    /* Separator line */
+    .h-rule {
+      display: inline-block;
+      width: 40px;
+      height: 2px;
+      background: var(--accent);
+      margin-right: 0.6rem;
+      vertical-align: middle;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- HEADER -->
+  <header>
+    <div class="header-inner">
+      <a class="logo" href="#">
+        <span class="logo-dot"></span>
+        SIGNAL
+      </a>
+      <div class="header-meta">
+        <div class="live-badge">
+          <div class="live-dot"></div>
+          LIVE FEED
+        </div>
+        <button class="refresh-btn" id="refreshBtn" onclick="loadFeeds()">↺ REFRESH</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- CHANNEL NAV -->
+  <nav class="channel-nav">
+    <div class="channel-nav-inner" id="channelNav">
+      <button class="channel-tab active" data-channel="all" onclick="switchChannel('all', this)">
+        <span class="tab-icon">◈</span> All
+      </button>
+      <button class="channel-tab" data-channel="tech" onclick="switchChannel('tech', this)">
+        <span class="tab-icon">⚡</span> Tech
+      </button>
+      <button class="channel-tab" data-channel="gaming" onclick="switchChannel('gaming', this)">
+        <span class="tab-icon">◎</span> Gaming
+      </button>
+      <button class="channel-tab" data-channel="rockstar" onclick="switchChannel('rockstar', this)">
+        <span class="tab-icon">★</span> Rockstar
+      </button>
+      <button class="channel-tab" data-channel="capcom" onclick="switchChannel('capcom', this)">
+        <span class="tab-icon">◆</span> Capcom
+      </button>
+      <button class="channel-tab" data-channel="activision" onclick="switchChannel('activision', this)">
+        <span class="tab-icon">◉</span> Activision
+      </button>
+      <button class="channel-tab" data-channel="cdpr" onclick="switchChannel('cdpr', this)">
+        <span class="tab-icon">▲</span> CD Projekt
+      </button>
+      <button class="channel-tab" data-channel="ai" onclick="switchChannel('ai', this)">
+        <span class="tab-icon">◇</span> AI
+      </button>
+    </div>
+  </nav>
+
+  <!-- MAIN -->
+  <div class="main-layout">
+    <!-- SIDEBAR -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-block">
+        <div class="sidebar-title">Stats</div>
+        <div class="stats-grid">
+          <div class="stat-item">
+            <div class="stat-value" id="statArticles">—</div>
+            <div class="stat-label">Articles</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-value" id="statSources">—</div>
+            <div class="stat-label">Sources</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-value" id="statChannels">—</div>
+            <div class="stat-label">Channels</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-value" id="statTime">—</div>
+            <div class="stat-label">Updated</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="sidebar-block">
+        <div class="sidebar-title">Sources</div>
+        <ul class="source-list" id="sourceList">
+          <li class="source-item"><span>Loading...</span><span class="source-dot"></span></li>
+        </ul>
+      </div>
+    </aside>
+
+    <!-- FEED -->
+    <main id="feedArea" class="feed-area">
+      <!-- Skeleton loaders -->
+      <div class="skeleton-section" id="skeletonLoader">
+        <div class="skeleton-header"></div>
+        <div class="skeleton-grid">
+          <div class="skeleton-card" style="grid-row:span 2"></div>
+          <div class="skeleton-card"></div>
+          <div class="skeleton-card"></div>
+        </div>
+      </div>
+      <div class="skeleton-section">
+        <div class="skeleton-header" style="width:140px"></div>
+        <div class="skeleton-grid">
+          <div class="skeleton-card" style="grid-row:span 2"></div>
+          <div class="skeleton-card"></div>
+          <div class="skeleton-card"></div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <footer>
+    <div class="footer-inner">
+      <div class="footer-logo">SIGNAL</div>
+      <div class="footer-note">RSS aggregator — Tech & Gaming — Updates every 5 min</div>
+    </div>
+  </footer>
+
+  <script>
+    const CHANNEL_META = {
+      all:        { label: 'All Channels', badge: '', icon: '◈' },
+      tech:       { label: 'Technology',   badge: 'badge-tech',   icon: '⚡' },
+      gaming:     { label: 'Gaming',       badge: 'badge-gaming', icon: '◎' },
+      rockstar:   { label: 'Rockstar Games', badge: 'badge-studio', icon: '★' },
+      capcom:     { label: 'Capcom',       badge: 'badge-studio', icon: '◆' },
+      activision: { label: 'Activision',   badge: 'badge-studio', icon: '◉' },
+      cdpr:       { label: 'CD Projekt Red', badge: 'badge-studio', icon: '▲' },
+      ai:         { label: 'Artificial Intelligence', badge: 'badge-ai', icon: '◇' },
+    };
+
+    const CHANNEL_ICONS = {
+      tech: '⚡', gaming: '◎', rockstar: '★', capcom: '◆',
+      activision: '◉', cdpr: '▲', ai: '◇',
+    };
+
+    let currentChannel = 'all';
+    let allFeedsData = null;
+
+    function relTime(dateStr) {
+      if (!dateStr) return 'Unknown';
+      const d = new Date(dateStr);
+      if (isNaN(d)) return '';
+      const diff = (Date.now() - d) / 1000;
+      if (diff < 60) return 'Just now';
+      if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
+      if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
+      return `${Math.floor(diff / 86400)}d ago`;
+    }
+
+    function switchChannel(channel, el) {
+      currentChannel = channel;
+      document.querySelectorAll('.channel-tab').forEach(t => t.classList.remove('active'));
+      el.classList.add('active');
+      if (allFeedsData) renderFeeds(allFeedsData, channel);
+      else loadFeeds();
+    }
+
+    async function loadFeeds() {
+      const btn = document.getElementById('refreshBtn');
+      btn.classList.add('loading');
+      btn.textContent = '↺ LOADING';
+
+      const feedArea = document.getElementById('feedArea');
+      // Show skeleton
+      feedArea.innerHTML = `
+        <div class="skeleton-section">
+          <div class="skeleton-header"></div>
+          <div class="skeleton-grid">
+            <div class="skeleton-card" style="grid-row:span 2;height:100%"></div>
+            <div class="skeleton-card"></div>
+            <div class="skeleton-card"></div>
+          </div>
+        </div>
+        <div class="skeleton-section">
+          <div class="skeleton-header" style="width:160px"></div>
+          <div class="skeleton-grid">
+            <div class="skeleton-card" style="grid-row:span 2;height:100%"></div>
+            <div class="skeleton-card"></div>
+            <div class="skeleton-card"></div>
+          </div>
+        </div>`;
+
+      try {
+        const res = await fetch(`/api/feeds?channel=all`);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+        allFeedsData = data;
+        renderFeeds(data, currentChannel);
+        updateStats(data);
+        updateSourceList(data);
+      } catch (err) {
+        feedArea.innerHTML = `
+          <div class="error-state">
+            <div class="error-icon">⚠</div>
+            <div class="error-title">Feed Error</div>
+            <div class="error-msg">${err.message}. Make sure the API is deployed and CORS is configured.</div>
+          </div>`;
+      } finally {
+        btn.classList.remove('loading');
+        btn.textContent = '↺ REFRESH';
+      }
+    }
+
+    function groupFeedsByChannel(feeds) {
+      const channelMap = {
+        tech: ['The Verge','Ars Technica','Wired','TechCrunch','Hacker News'],
+        gaming: ['IGN','Kotaku','PC Gamer','Rock Paper Shotgun','Eurogamer'],
+        rockstar: ['Rockstar News','GTAForums'],
+        capcom: ['Capcom News'],
+        activision: ['Call of Duty Blog'],
+        cdpr: ['CD Projekt Blog'],
+        ai: ['MIT Tech Review AI','VentureBeat AI'],
+      };
+      const result = {};
+      for (const [channel, sources] of Object.entries(channelMap)) {
+        result[channel] = feeds.filter(f => sources.includes(f.source));
+      }
+      return result;
+    }
+
+    function renderFeeds(data, channel) {
+      const feedArea = document.getElementById('feedArea');
+      feedArea.innerHTML = '';
+
+      // Flatten all items from all feeds per channel
+      const grouped = groupFeedsByChannel(data.feeds);
+
+      const channelsToShow = channel === 'all'
+        ? Object.keys(grouped)
+        : [channel];
+
+      let rendered = 0;
+
+      for (const ch of channelsToShow) {
+        const feeds = grouped[ch] || [];
+        const allItems = feeds
+          .flatMap(f => f.items.map(item => ({ ...item, feedSource: f.source })))
+          .sort((a, b) => new Date(b.pubDate) - new Date(a.pubDate))
+          .slice(0, 8);
+
+        if (!allItems.length) continue;
+
+        const meta = CHANNEL_META[ch] || { label: ch, badge: '', icon: '◈' };
+        const section = document.createElement('div');
+        section.className = 'channel-section';
+        section.style.animationDelay = `${rendered * 0.08}s`;
+
+        const badgeHtml = meta.badge
+          ? `<span class="section-badge ${meta.badge}">${meta.icon} ${meta.label}</span>`
+          : '';
+
+        section.innerHTML = `
+          <div class="section-header">
+            <div class="section-name"><span class="h-rule"></span>${meta.label.toUpperCase()}</div>
+            <div class="section-count">${allItems.length} articles</div>
+            ${badgeHtml}
+          </div>
+          ${buildArticleGrid(allItems)}
+        `;
+
+        feedArea.appendChild(section);
+        rendered++;
+      }
+
+      if (rendered === 0) {
+        feedArea.innerHTML = `<div class="empty-state"><p>No articles found for this channel. The RSS feeds may be temporarily unavailable.</p></div>`;
+      }
+    }
+
+    function buildArticleGrid(items) {
+      const featured = items[0];
+      const secondary = items.slice(1, 3);
+      const rest = items.slice(3);
+
+      const featuredHtml = buildFeaturedCard(featured);
+      const secondaryHtml = secondary.map(buildSecondaryCard).join('');
+      const restHtml = rest.length
+        ? `<div class="article-list">${rest.map(buildListItem).join('')}</div>`
+        : '';
+
+      return `
+        <div class="article-grid ${secondary.length ? 'has-featured' : ''}">
+          ${featuredHtml}
+          ${secondaryHtml}
+        </div>
+        ${restHtml}
+      `;
+    }
+
+    function safeImg(src, cls, alt) {
+      if (src) {
+        return `<img class="${cls}" src="${escHtml(src)}" alt="${escHtml(alt)}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" loading="lazy">
+                <div class="${cls}-placeholder" style="display:none"><span class="placeholder-icon">◎</span></div>`;
+      }
+      return `<div class="${cls}-placeholder"><span class="placeholder-icon">◎</span></div>`;
+    }
+
+    function buildFeaturedCard(item) {
+      return `
+        <a class="article-card featured" href="${escHtml(item.link)}" target="_blank" rel="noopener">
+          ${safeImg(item.thumbnail, 'card-image', item.title)}
+          <div class="card-body">
+            <div class="card-meta">
+              <span class="card-source">${escHtml(item.source)}</span>
+              <span class="card-dot"></span>
+              <span class="card-time">${relTime(item.pubDate)}</span>
+            </div>
+            <div class="card-title">${escHtml(item.title)}</div>
+            <div class="card-summary">${escHtml(item.summary || '')}</div>
+          </div>
+        </a>`;
+    }
+
+    function buildSecondaryCard(item) {
+      return `
+        <a class="article-card" href="${escHtml(item.link)}" target="_blank" rel="noopener">
+          ${safeImg(item.thumbnail, 'card-image', item.title)}
+          <div class="card-body">
+            <div class="card-meta">
+              <span class="card-source">${escHtml(item.source)}</span>
+              <span class="card-dot"></span>
+              <span class="card-time">${relTime(item.pubDate)}</span>
+            </div>
+            <div class="card-title">${escHtml(item.title)}</div>
+          </div>
+        </a>`;
+    }
+
+    function buildListItem(item) {
+      const thumbHtml = item.thumbnail
+        ? `<img class="list-thumb" src="${escHtml(item.thumbnail)}" alt="" loading="lazy" onerror="this.style.display='none'">`
+        : `<div class="list-thumb-placeholder">◎</div>`;
+      return `
+        <a class="article-list-item" href="${escHtml(item.link)}" target="_blank" rel="noopener">
+          ${thumbHtml}
+          <div class="list-content">
+            <div class="list-title">${escHtml(item.title)}</div>
+            <div class="list-meta">
+              <span class="list-source">${escHtml(item.source)}</span>
+              <span class="list-time">${relTime(item.pubDate)}</span>
+            </div>
+          </div>
+        </a>`;
+    }
+
+    function updateStats(data) {
+      const totalArticles = data.feeds.reduce((n, f) => n + f.items.length, 0);
+      const loadedSources = data.feeds.filter(f => f.items.length > 0).length;
+      document.getElementById('statArticles').textContent = totalArticles;
+      document.getElementById('statSources').textContent = loadedSources;
+      document.getElementById('statChannels').textContent = Object.keys(CHANNEL_META).length - 1;
+      document.getElementById('statTime').textContent = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    }
+
+    function updateSourceList(data) {
+      const list = document.getElementById('sourceList');
+      list.innerHTML = data.feeds.map(f => {
+        const cls = f.error ? 'error' : f.items.length ? 'loaded' : '';
+        return `<li class="source-item ${cls}">
+          <span>${escHtml(f.source)}</span>
+          <span class="source-dot"></span>
+        </li>`;
+      }).join('');
+    }
+
+    function escHtml(str) {
+      if (!str) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+
+    // Auto-refresh every 5 minutes
+    setInterval(loadFeeds, 5 * 60 * 1000);
+
+    // Initial load
+    loadFeeds();
+  </script>
+</body>
+</html>
+ 
