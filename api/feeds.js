@@ -1,152 +1,273 @@
 const Parser = require("rss-parser");
 
 const parser = new Parser({
-  timeout: 10000,
+  timeout: 12000,
   headers: {
-    "User-Agent":
-      "Mozilla/5.0 (compatible; RSSReader/1.0; +https://github.com/rss-reader)",
-    Accept:
-      "application/rss+xml, application/xml, text/xml, application/atom+xml, */*",
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+    Accept: "application/rss+xml, application/xml, text/xml, application/atom+xml, */*",
   },
   customFields: {
     item: [
       ["media:thumbnail", "mediaThumbnail"],
       ["media:content", "mediaContent"],
+      ["media:group", "mediaGroup"],
       ["enclosure", "enclosure"],
       ["dc:creator", "creator"],
     ],
   },
 });
 
-// RSS feeds organized by channel
+// Each source has a primary URL and optional fallbacks
 const FEEDS = {
   tech: [
-    { name: "The Verge", url: "https://www.theverge.com/rss/index.xml" },
-    { name: "Ars Technica", url: "https://feeds.arstechnica.com/arstechnica/index" },
-    { name: "Wired", url: "https://www.wired.com/feed/rss" },
-    { name: "TechCrunch", url: "https://techcrunch.com/feed/" },
-    { name: "Hacker News", url: "https://news.ycombinator.com/rss" },
+    {
+      name: "The Verge",
+      urls: ["https://www.theverge.com/rss/index.xml"],
+    },
+    {
+      name: "Ars Technica",
+      urls: [
+        "https://feeds.arstechnica.com/arstechnica/index",
+        "https://arstechnica.com/feed/",
+      ],
+    },
+    {
+      name: "Wired",
+      urls: ["https://www.wired.com/feed/rss"],
+    },
+    {
+      name: "TechCrunch",
+      urls: ["https://techcrunch.com/feed/"],
+    },
+    {
+      name: "Hacker News",
+      urls: ["https://news.ycombinator.com/rss"],
+    },
   ],
   gaming: [
-    { name: "IGN", url: "https://feeds.feedburner.com/ign/all" },
-    { name: "Kotaku", url: "https://kotaku.com/rss" },
-    { name: "PC Gamer", url: "https://www.pcgamer.com/rss/" },
-    { name: "Rock Paper Shotgun", url: "https://www.rockpapershotgun.com/feed" },
-    { name: "Eurogamer", url: "https://www.eurogamer.net/?format=rss" },
+    {
+      name: "IGN",
+      urls: [
+        "https://feeds.ign.com/ign/all",
+        "http://feeds.ign.com/ign/all",
+        "https://ign.com/rss/articles.xml",
+      ],
+    },
+    {
+      name: "Kotaku",
+      urls: ["https://kotaku.com/rss"],
+    },
+    {
+      name: "Polygon",
+      urls: ["https://www.polygon.com/rss/index.xml"],
+    },
+    {
+      name: "GameSpot",
+      urls: [
+        "https://www.gamespot.com/feeds/mashup/",
+        "https://www.gamespot.com/feeds/news",
+      ],
+    },
+    {
+      name: "Rock Paper Shotgun",
+      urls: [
+        "https://www.rockpapershotgun.com/feed",
+        "http://feeds.feedburner.com/RockPaperShotgun",
+      ],
+    },
+    {
+      name: "Eurogamer",
+      urls: ["https://www.eurogamer.net/?format=rss"],
+    },
+    {
+      name: "PC Gamer",
+      urls: ["https://www.pcgamer.com/rss/"],
+    },
   ],
   rockstar: [
-    { name: "Rockstar News", url: "https://www.rockstargames.com/newswire/rss" },
-    { name: "GTAForums", url: "https://gtaforums.com/forum/5-announcements-information.xml/" },
+    {
+      name: "Rockstar Newswire",
+      urls: ["https://www.rockstargames.com/newswire/rss"],
+    },
   ],
   capcom: [
-    { name: "Capcom News", url: "https://www.capcom.com/us/feed.rss" },
+    {
+      name: "Capcom-Unity",
+      urls: ["https://www.capcom-unity.com/feed/"],
+    },
   ],
   activision: [
-    { name: "Call of Duty Blog", url: "https://www.callofduty.com/blog/feed" },
+    {
+      name: "Call of Duty Blog",
+      urls: [
+        "https://www.callofduty.com/blog/feed",
+        "https://blog.activision.com/feed",
+      ],
+    },
   ],
   cdpr: [
-    { name: "CD Projekt Blog", url: "https://www.cdprojekt.com/en/feed/" },
+    {
+      name: "CD Projekt Red",
+      urls: ["https://www.cdprojektred.com/en/feed"],
+    },
+    {
+      name: "CD Projekt Blog",
+      urls: ["https://www.cdprojekt.com/en/feed/"],
+    },
   ],
   ai: [
-    { name: "MIT Tech Review AI", url: "https://www.technologyreview.com/topic/artificial-intelligence/feed/" },
-    { name: "VentureBeat AI", url: "https://feeds.feedburner.com/venturebeat/SZYF" },
+    {
+      name: "MIT Tech Review AI",
+      urls: [
+        "https://www.technologyreview.com/topic/artificial-intelligence/feed/",
+        "https://www.technologyreview.com/feed/",
+      ],
+    },
+    {
+      name: "VentureBeat AI",
+      urls: [
+        "https://venturebeat.com/category/ai/feed/",
+        "https://feeds.feedburner.com/venturebeat/SZYF",
+      ],
+    },
+    {
+      name: "The Gradient",
+      urls: ["https://thegradient.pub/rss/"],
+    },
   ],
 };
 
-async function fetchFeed(feedInfo) {
-  try {
-    const feed = await parser.parseURL(feedInfo.url);
-    const items = (feed.items || []).slice(0, 10).map((item) => {
-      // Extract thumbnail from various possible fields
-      let thumbnail = null;
-      if (item.mediaThumbnail?.$.url) thumbnail = item.mediaThumbnail.$.url;
-      else if (item.mediaContent?.$.url) thumbnail = item.mediaContent.$.url;
-      else if (item.enclosure?.url && item.enclosure.type?.startsWith("image"))
-        thumbnail = item.enclosure.url;
-      else if (item["media:thumbnail"]?.$.url)
-        thumbnail = item["media:thumbnail"].$.url;
+// ── THUMBNAIL EXTRACTION ─────────────────────────────────────────────────────
+function extractThumbnail(item) {
+  // 1. media:thumbnail
+  if (item.mediaThumbnail) {
+    const t = item.mediaThumbnail;
+    if (t?.$ && t.$.url) return t.$.url;
+    if (Array.isArray(t) && t[0]?.$ && t[0].$.url) return t[0].$.url;
+  }
 
-      // Try to extract image from content
-      if (!thumbnail && item.content) {
-        const imgMatch = item.content.match(/<img[^>]+src=["']([^"']+)["']/i);
-        if (imgMatch) thumbnail = imgMatch[1];
+  // 2. media:content
+  if (item.mediaContent) {
+    const c = item.mediaContent;
+    const url = c?.$ && c.$.url;
+    const type = c?.$ && c.$.type;
+    if (url && (!type || type.startsWith("image"))) return url;
+    if (Array.isArray(c)) {
+      for (const mc of c) {
+        if (mc?.$ && mc.$.url && (!mc.$.type || mc.$.type.startsWith("image"))) return mc.$.url;
       }
-      if (!thumbnail && item["content:encoded"]) {
-        const imgMatch = item["content:encoded"].match(
-          /<img[^>]+src=["']([^"']+)["']/i
-        );
-        if (imgMatch) thumbnail = imgMatch[1];
-      }
+    }
+  }
 
-      return {
+  // 3. enclosure
+  if (item.enclosure?.url && item.enclosure?.type?.startsWith("image")) {
+    return item.enclosure.url;
+  }
+
+  // 4. media:group → media:content
+  if (item.mediaGroup) {
+    const g = Array.isArray(item.mediaGroup) ? item.mediaGroup[0] : item.mediaGroup;
+    if (g?.["media:content"]) {
+      const mc = g["media:content"];
+      const arr = Array.isArray(mc) ? mc : [mc];
+      for (const m of arr) {
+        if (m?.$ && m.$.url) return m.$.url;
+      }
+    }
+  }
+
+  // 5. Scrape first <img> from content
+  const html = item["content:encoded"] || item.content || item.summary || "";
+  if (html) {
+    const m = html.match(/<img[^>]+src=["']([^"']+)["']/i);
+    if (m && m[1] && !m[1].includes("pixel") && !m[1].includes("tracking")) return m[1];
+  }
+
+  return null;
+}
+
+function stripHtml(html) {
+  if (!html) return "";
+  return html
+    .replace(/<[^>]+>/g, " ")
+    .replace(/&amp;/g, "&")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&nbsp;/g, " ")
+    .replace(/&#\d+;/g, " ")
+    .replace(/\s+/g, " ")
+    .trim()
+    .slice(0, 280);
+}
+
+// ── FETCH WITH FALLBACK ───────────────────────────────────────────────────────
+async function fetchFeedWithFallback(feedDef) {
+  let lastErr = null;
+  for (const url of feedDef.urls) {
+    try {
+      const feed = await parser.parseURL(url);
+      const items = (feed.items || []).slice(0, 12).map((item) => ({
         title: item.title || "Untitled",
         link: item.link || item.guid || "#",
         pubDate: item.pubDate || item.isoDate || null,
         summary:
           item.contentSnippet ||
-          item.summary ||
-          stripHtml(item.content || item["content:encoded"] || ""),
-        thumbnail,
-        author: item.creator || item.author || feedInfo.name,
-        source: feedInfo.name,
-      };
-    });
-    return { source: feedInfo.name, url: feedInfo.url, items, error: null };
-  } catch (err) {
-    console.error(`Failed to fetch ${feedInfo.name}:`, err.message);
-    return {
-      source: feedInfo.name,
-      url: feedInfo.url,
-      items: [],
-      error: err.message,
-    };
+          stripHtml(item["content:encoded"] || item.content || item.summary || ""),
+        thumbnail: extractThumbnail(item),
+        author: item.creator || item.author || feedDef.name,
+        source: feedDef.name,
+      }));
+      return { source: feedDef.name, items, error: null };
+    } catch (err) {
+      lastErr = err;
+      console.warn(`[${feedDef.name}] Failed ${url}: ${err.message}`);
+    }
   }
+  console.error(`[${feedDef.name}] All URLs failed: ${lastErr?.message}`);
+  return { source: feedDef.name, items: [], error: lastErr?.message || "Failed" };
 }
 
-function stripHtml(html) {
-  return html
-    .replace(/<[^>]+>/g, " ")
-    .replace(/\s+/g, " ")
-    .trim()
-    .slice(0, 200);
-}
-
+// ── HANDLER ───────────────────────────────────────────────────────────────────
 module.exports = async (req, res) => {
   if (req.method === "OPTIONS") {
+    res.setHeader("Access-Control-Allow-Origin", "*");
     res.status(200).end();
     return;
   }
 
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Cache-Control", "s-maxage=300, stale-while-revalidate=600");
+
   const channel = req.query.channel || "all";
 
-  let feedsToFetch = [];
+  let feedDefs = [];
   if (channel === "all") {
-    feedsToFetch = Object.values(FEEDS).flat();
+    feedDefs = Object.values(FEEDS).flat();
   } else if (FEEDS[channel]) {
-    feedsToFetch = FEEDS[channel];
+    feedDefs = FEEDS[channel];
   } else {
     res.status(400).json({ error: "Unknown channel" });
     return;
   }
 
-  try {
-    const results = await Promise.allSettled(
-      feedsToFetch.map((f) => fetchFeed(f))
-    );
-    const feeds = results
-      .filter((r) => r.status === "fulfilled")
-      .map((r) => r.value);
+  // Fetch all in parallel
+  const results = await Promise.allSettled(feedDefs.map(fetchFeedWithFallback));
+  const feeds = results
+    .filter((r) => r.status === "fulfilled")
+    .map((r) => r.value);
 
-    // Also return channel metadata
-    const channels = Object.keys(FEEDS).map((key) => ({
-      id: key,
-      label: key.charAt(0).toUpperCase() + key.slice(1),
-      sources: FEEDS[key].map((f) => f.name),
-    }));
+  const totalArticles = feeds.reduce((n, f) => n + f.items.length, 0);
+  const loadedFeeds = feeds.filter((f) => f.items.length > 0).length;
 
-    res.status(200).json({ feeds, channels, channel });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
+  res.status(200).json({
+    feeds,
+    meta: {
+      channel,
+      totalArticles,
+      loadedFeeds,
+      totalFeeds: feedDefs.length,
+      timestamp: new Date().toISOString(),
+    },
+  });
 };
  
